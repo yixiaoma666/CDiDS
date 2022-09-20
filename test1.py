@@ -1,58 +1,39 @@
+from IK_AHC import IK_AHC
+from IK_AHC_new import IK_AHC_new
 from SENNE import SENNE
 import random
 import matplotlib.pyplot as plt
 import math
 
-c1, r1 = (0, 0), 1
-c2, r2 = (2, 2), 1
-c3, r3 = (5, 5), 2
-c4, r4 = (0, 5), 2
+from generate_uniform_circle import generate_uniform_circle
 
-DS = list()
-class1 = list()
-class2 = list()
-class3 = list()
-class4 = list()
-for _ in range(100):
-    r = random.random() * r1
-    theta = random.random() * 2 * math.pi
-    class1.append((c1[0] + r * math.cos(theta), c1[1] + r * math.sin(theta)))
-for _ in range(100):
-    r = random.random() * r2
-    theta = random.random() * 2 * math.pi
-    class2.append((c2[0] + r * math.cos(theta), c2[1] + r * math.sin(theta)))
-for _ in range(100):
-    r = random.random() * r3
-    theta = random.random() * 2 * math.pi
-    class3.append((c3[0] + r * math.cos(theta), c3[1] + r * math.sin(theta)))
-for _ in range(100):
-    r = random.random() * r4
-    theta = random.random() * 2 * math.pi
-    class4.append((c4[0] + r * math.cos(theta), c4[1] + r * math.sin(theta)))
+DS = []
+DS += generate_uniform_circle((0, 0), 1, 100)
+DS += generate_uniform_circle((5, 5), 1, 100)
+DS += generate_uniform_circle((0, 5), 1, 100)
+DS += generate_uniform_circle((5, 0), 1, 100)
+random.shuffle(DS)
 
 
-DS.append(class1)
-DS.append(class2)
-my_class = [class1 + class2 + class3 + class4]
-# print(class3)
+myx = IK_AHC_new(DS, 2, 1000)
+c1, c2, c3, c4 = myx.streaKHC(class_num=4)
+# c1, c2, c3, c4= myx.streaKHC()
+for each in c1:
+    plt.scatter(each[0], each[1], color="red")
+
+for each in c2:
+    plt.scatter(each[0], each[1], color="blue")
+
+for each in c3:
+    plt.scatter(each[0], each[1], color="green")
+
+for each in c4:
+    plt.scatter(each[0], each[1], color="yellow")
 
 
-S = 0
-myx = SENNE(my_class, 25, 2, 0.8)
-# check_point = (1.35, 1.35)
-# print(f"0类N={myx.get_Ni(check_point, 0)}\t 1类N={myx.get_Ni(check_point, 1)}")
-# print(f"0类P={myx.get_Pi(check_point, 0)}\t 1类P={myx.get_Pi(check_point, 1)}")
-# print(myx.f(check_point))
-classified = myx.classify()
-print(len(classified))
-myx2 = SENNE(classified, 25, 2, 0.8)
-# S += len(output)
-# if len(output) != 4:
-#     continue
-# color = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1),
-#         (0, 1, 1), (1, 0, 1), (1, 1, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5)]
-# for i in range(len(output)):
-#     for each in output[i]:
-#         plt.scatter(each[0], each[1], color=color[i])
-# plt.show()
-# print(f"psi={25}\tt={2}\t{S/100}\n")
+plt.show()
+
+# new_point = (1, 1)
+
+
+

@@ -1,19 +1,18 @@
 import math
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
-from torch import fmax
 from Hypersphere import Hypersphere
 import random
 
 
 class Isolation_Kernel:
-    def __init__(self, data: List, psi, t) -> None:
+    def __init__(self, data: list, psi, t) -> None:
         self.data = data
         self.psi = psi
         self.t = t
         self.size = len(self.data)
-        self.hypersphere_list: List[Hypersphere] = list()
+        self.hypersphere_list: list[Hypersphere] = list()
         self.get_hyperspheres()
 
     def get_hyperspheres(self):
@@ -53,7 +52,7 @@ class Isolation_Kernel:
         S = S ** (1 / 2)
         return S
 
-    def get_nearest_dis(self, point, data_list: List):
+    def get_nearest_dis(self, point, data_list: list):
         min_dis = math.inf
         for each in data_list:
             if point == each:
@@ -62,14 +61,11 @@ class Isolation_Kernel:
         return min_dis
 
     def list_mult(self, list1, list2):
-        S = 0
-        for i in range(len(list1)):
-            S += list1[i] * list2[i]
-        return S
+        return sum([list1[i] * list2[i] for i in range(len(list1))])
 
-    def list_add(self, list1, list2, num = 1):
+    def list_add(self, list1, list2, num=1):
         n = len(list1)
-        return [(list1[i] + list2[i]) / num for i in range(n)]        
+        return [(list1[i] + list2[i]) / num for i in range(n)]
 
     def point_point_kernel(self, point1, point2):
         feature_map1 = self.get_point_feature_map(point1)
@@ -82,11 +78,9 @@ class Isolation_Kernel:
         feature_map2 = self.get_list_feature_map(point_list)
         S = self.list_mult(feature_map1, feature_map2)
         return S/self.t
-    
+
     def list_list_kernel(self, list1, list2):
         feature_map1 = self.get_list_feature_map(list1)
         feature_map2 = self.get_list_feature_map(list2)
-        S = self.list_mult(feature_map1,feature_map2)
+        S = self.list_mult(feature_map1, feature_map2)
         return S/self.t
-
-

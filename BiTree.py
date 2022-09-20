@@ -1,8 +1,8 @@
 class Node:
     def __init__(self, _data) -> None:
         self.data = _data
-        self.lchild:Node = None
-        self.rchild:Node = None
+        self.lchild = None
+        self.rchild = None
 
 class BiTree:
     def __init__(self, _p:Node) -> None:
