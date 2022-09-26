@@ -84,3 +84,24 @@ class Isolation_Kernel:
         feature_map2 = self.get_list_feature_map(list2)
         S = self.list_mult(feature_map1, feature_map2)
         return S/self.t
+
+    def new_get_point_feature_map(self, point):
+        output = list()
+        for _t in range(self.t):
+            for _psi in range(self.psi):
+                if self.hypersphere_list[self.psi * _t + _psi].isIn(point):
+                    output.append(1)
+                else:
+                    output.append(0)
+        return output
+    
+    def new_get_list_feature_map(self, point_list):
+        map_list = [self.new_get_point_feature_map(each) for each in point_list]
+        output = [0] * (self.psi * self.t)
+        for each1 in map_list:
+            for i in range(len(each1)):
+                output[i] += each1[i]
+        lens = len(point_list)
+        return list(map(lambda x: x/lens, output))
+
+

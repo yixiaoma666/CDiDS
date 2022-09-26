@@ -20,7 +20,7 @@ class IK_AHC_new(Isolation_Kernel):
         while len(output) < class_num:
             min_kernel = min(list(map(lambda x:self.list_mult(x.lchild.data[1],x.rchild.data[1])/(self.list_mult(x.lchild.data[1],x.lchild.data[1])**0.5*self.list_mult(x.rchild.data[1],x.rchild.data[1])**0.5),output)))
             for each in output:
-                if self.list_mult(each.lchild.data[1],each.rchild.data[1])/(self.list_mult(each.lchild.data[1],each.lchild.data[1])**0.5*self.list_mult(each.rchild.data[1],each.rchild.data[1])**0.5):
+                if self.list_mult(each.lchild.data[1],each.rchild.data[1])/(self.list_mult(each.lchild.data[1],each.lchild.data[1])**0.5*self.list_mult(each.rchild.data[1],each.rchild.data[1])**0.5) == min_kernel:
                     output.remove(each)
                     output.append(each.lchild)
                     output.append(each.rchild)
