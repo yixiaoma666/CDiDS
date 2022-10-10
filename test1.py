@@ -16,7 +16,7 @@ DS += generate_uniform_circle((0, 3), 1, 100)
 random.shuffle(DS)
 
 
-myx = IK_AHC_new(DS, 3, 1000)
+myx = IK_AHC_new(DS, 3, 100)
 c1, c2, c3, c4 = myx.streaKHC(class_num=4)
 # c1, c2, c3, c4= myx.streaKHC()
 for each in c1:

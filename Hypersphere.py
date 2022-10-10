@@ -18,4 +18,4 @@ class Hypersphere:
             return True
         else:
             return False
-                
+

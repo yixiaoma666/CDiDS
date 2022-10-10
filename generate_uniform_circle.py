@@ -9,4 +9,3 @@ def generate_uniform_circle(center, radius, num):
         theta = random.random() * 2 * math.pi
         output.append((center[0] + r * math.cos(theta), center[1] + r * math.sin(theta)))
     return output
-        

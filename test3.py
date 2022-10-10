@@ -12,13 +12,12 @@ adwin = ADWIN()
 
 # np.savetxt("data2.csv", data_stream, delimiter=",")
 
-data_stream = np.array([0] * 200 + [1] * 200 + [0] * 200) 
-
+data_stream = np.loadtxt("data3.csv", delimiter=",")
 
 # data_stream = np.loadtxt("data2.csv", delimiter=",")
 
-for i in range(600):
+for i in range(2001):
     adwin.add_element(data_stream[i])
     if adwin.detected_change():
         print(f"{data_stream[i]}\t{i}")
-    
+

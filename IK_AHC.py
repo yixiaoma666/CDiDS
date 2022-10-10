@@ -19,7 +19,7 @@ class IK_AHC(Isolation_Kernel):
         AHC_tree = BiTree(Node([map_data[0], 1]))
         for each in map_data[1:]:
             self.grow_tree(AHC_tree, each)
-        
+
         class_num = 4
         output = [AHC_tree.root]
         while len(output) < class_num:
@@ -36,8 +36,8 @@ class IK_AHC(Isolation_Kernel):
         for _ in range(class_num):
             output.pop(0)
         return output
-        
-            
+
+
 
 
     def grow_tree(self, tree: BiTree, new_node):
