@@ -18,8 +18,8 @@ class IDK:
             _t (int): t
 
         """
-        self.data = self.normalization(_data)
-        # self.data = _data
+        # self.data = self.normalization(_data)
+        self.data = _data
         self.psi = _psi
         self.t = _t
         self.size = self.data.shape[0]
@@ -91,11 +91,16 @@ class IDK:
 
 
 def main():
-    for i in range(10):
-        test_data = np.array(generate_uniform_circle((0, 0), 1, 100))
-        myx = IDK(test_data, 2, 100)
-        output = myx.kappa(np.array([[i * 0.1, i * 0.1]]))
-        print(i, output)
-
+    for epoch in [2, 3, 4, 5, 6, 7, 8, 9, 10]:
+        S = 0
+        for _ in range(100):
+            # test_data = np.array(generate_uniform_circle((0, 0), 1, 100))
+            test_data = np.random.randn(100, 2)
+            myx = IDK(test_data, epoch, 100)
+            output = myx.kappa(np.array([[3, 0]]))
+            # print(i, output)
+            S += output
+        S /= 100
+        print(f"$\psi={epoch},t=100,x=\mu+2\sigma,\kappa={S:.5f}$")
 if __name__ == "__main__":
     main()
