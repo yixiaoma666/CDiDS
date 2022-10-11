@@ -30,15 +30,18 @@ class Isolation_Kernel:
     def get_point_feature_map(self, point):
         output = [0] * (self.psi * self.t)
         for _t in range(self.t):
+            any_in = False
             temp = 0
             min_dis = np.inf
             for _psi in range(self.psi):
-                if self.hypersphere_list[self.psi * _t + _psi].isIn(point):
-                    if self.distance(self.hypersphere_list[self.psi * _t + _psi].center, point) < min_dis:
-                        min_dis = self.distance(
-                            self.hypersphere_list[self.psi * _t + _psi].center, point)
-                        temp = _psi
-            output[self.psi * _t + temp] = 1
+                if self.hypersphere_list[self.psi * _t + _psi].isIn(point) and \
+                    self.distance(self.hypersphere_list[self.psi * _t + _psi].center, point) < min_dis:
+                    min_dis = self.distance(
+                        self.hypersphere_list[self.psi * _t + _psi].center, point)
+                    temp = _psi
+                    any_in = True
+            if any_in:
+                output[self.psi * _t + temp] = 1
         return csr_matrix(output).transpose()
 
     def get_list_feature_map(self, point_list):
@@ -92,7 +95,7 @@ class Isolation_Kernel:
 def main():
     test_data = generate_uniform_circle((0, 0), 1, 100)
     myx = Isolation_Kernel(test_data, 2, 100)
-    print(myx.similarity(test_data[0]))
+    print(myx.similarity((0, 0)))
     pass
 
 if __name__ == "__main__":

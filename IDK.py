@@ -19,6 +19,7 @@ class IDK:
 
         """
         self.data = self.normalization(_data)
+        # self.data = _data
         self.psi = _psi
         self.t = _t
         self.size = self.data.shape[0]
@@ -48,7 +49,7 @@ class IDK:
             self.hyperspheres_radius_list = np.concatenate((self.hyperspheres_radius_list, np.array(temp_hypersphere_radius).reshape(self.psi, 1)), axis=0)
         self.hyperspheres_center_list = np.delete(self.hyperspheres_center_list, 0, 0)
         self.hyperspheres_radius_list = np.delete(self.hyperspheres_radius_list, 0, 0)
-        self.list_feature_map /= (self.t * self.size)
+        self.list_feature_map /= (self.t ** 0.5 * self.size)
 
 
     def get_hyperspheres(self, dist_mat, sample_num):
@@ -77,6 +78,7 @@ class IDK:
                           self.hyperspheres_radius_list[_t * self.psi + nearest_sample_point_index],
                           point):
                 feature_map[_t * self.psi + nearest_sample_point_index, 0] += 1
+        feature_map /= (self.t ** 0.5)
         output = feature_map.transpose().dot(self.list_feature_map)[0, 0]
         return output
 
@@ -88,11 +90,11 @@ class IDK:
 
 
 def main():
-    test_data = np.array(generate_uniform_circle((0, 0), 1, 100))
-    myx = IDK(test_data, 2, 100)
-    output = myx.kernel(np.array([test_data[0,:]]))
-    print(output)
-
+    for i in range(10):
+        test_data = np.array(generate_uniform_circle((0, 0), 1, 100))
+        myx = IDK(test_data, 2, 100)
+        output = myx.kernel(np.array([[i * 0.1, i * 0.1]]))
+        print(i, output)
 
 if __name__ == "__main__":
     main()
