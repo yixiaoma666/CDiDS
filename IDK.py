@@ -49,7 +49,8 @@ class IDK:
             self.hyperspheres_radius_list = np.concatenate((self.hyperspheres_radius_list, np.array(temp_hypersphere_radius).reshape(self.psi, 1)), axis=0)
         self.hyperspheres_center_list = np.delete(self.hyperspheres_center_list, 0, 0)
         self.hyperspheres_radius_list = np.delete(self.hyperspheres_radius_list, 0, 0)
-        self.list_feature_map /= (self.t ** 0.5 * self.size)
+        self.list_feature_map /= (self.size * self.t ** 0.5)
+        self.list_feature_map /= (self.list_feature_map.transpose().dot(self.list_feature_map)[0, 0])**0.5
 
 
     def get_hyperspheres(self, dist_mat, sample_num):
@@ -69,7 +70,7 @@ class IDK:
         _min = np.min(x)
         return (x - _min) / (_max - _min)
 
-    def kernel(self, point):
+    def kappa(self, point):
         feature_map = csr_array(np.zeros((self.psi * self.t, 1)))
         for _t in range(self.t):
             dist_mat = cdist(point, self.hyperspheres_center_list[_t * self.psi:(_t+1)*self.psi, :])
@@ -93,7 +94,7 @@ def main():
     for i in range(10):
         test_data = np.array(generate_uniform_circle((0, 0), 1, 100))
         myx = IDK(test_data, 2, 100)
-        output = myx.kernel(np.array([[i * 0.1, i * 0.1]]))
+        output = myx.kappa(np.array([[i * 0.1, i * 0.1]]))
         print(i, output)
 
 if __name__ == "__main__":
