@@ -6,6 +6,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from Hypersphere import Hypersphere
 import random
+from generate_uniform_circle import generate_uniform_circle
 
 
 class Isolation_Kernel:
@@ -15,8 +16,9 @@ class Isolation_Kernel:
         self.t = t
         self.size = len(self.data)
         self.hypersphere_list: list[Hypersphere] = list()
-        self.list_feature_map = self.get_list_feature_map(self.data)
         self.get_hyperspheres()
+        self.list_feature_map = self.get_list_feature_map(self.data)
+
 
     def get_hyperspheres(self):
         for _ in range(self.t):
@@ -83,5 +85,15 @@ class Isolation_Kernel:
     def similarity(self, point):
         point_map = self.get_point_feature_map(point)
         output = point_map.transpose() * self.list_feature_map
+        output /= self.t
         return output[0, 0]
 
+
+def main():
+    test_data = generate_uniform_circle((0, 0), 1, 100)
+    myx = Isolation_Kernel(test_data, 2, 100)
+    print(myx.similarity(test_data[0]))
+    pass
+
+if __name__ == "__main__":
+    main()
