@@ -5,8 +5,7 @@ import numpy as np
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 from generate_uniform_circle import generate_uniform_circle
-from sklearn.metrics import roc_curve, auc, accuracy_score
-
+from sklearn.metrics import f1_score, roc_curve, auc, accuracy_score
 
 
 class Model_detector:
@@ -79,7 +78,6 @@ class ADwCDiDS:
         self.model_bucket: List[Model_detector] = []
         self.init_model()
 
-
     def detect(self) -> None:
         output = []
         while not self.is_over:
@@ -98,7 +96,7 @@ class ADwCDiDS:
         self.model_bucket.append(
             Model_detector(
                 IDK_rewrite(self.data[:int(self.window_size * self.alpha), :],
-                    self.psi),
+                            self.psi),
                 self.window_size,
                 self.k))
 
@@ -189,28 +187,28 @@ class ADwCDiDS:
 def main():
     for _psi in [2]:
         roc = 0
-        max_accuracy = 0
+        max_f1 = 0
         for _ in range(10):
-            test_data = np.loadtxt("data_set\shuttle.csv", delimiter=",")[:, :9]
-            ans = np.loadtxt("data_set\shuttle.csv", delimiter=",")[:, 9].reshape(-1)
+            test_data = np.loadtxt(
+                "data_set\shuttle.csv", delimiter=",")[:, :9]
+            ans = np.loadtxt("data_set\shuttle.csv", delimiter=",")[
+                :, 9].reshape(-1)
             # test_data = np.array(generate_uniform_circle((0,0), 1, 1000) + generate_uniform_circle((10, 10), 1, 1000))
             myx = ADwCDiDS(test_data, _psi, _k=0.001)
             predict = myx.detect()
-            ans = list(1+ans) # 异常是2，正常是1
+            ans = list(1+ans)  # 异常是2，正常是1
 
             fpr, tpr, thresholds = roc_curve(ans, predict, pos_label=2)
-            accuracy_scores = []
+            f1_scores = []
             for thresh in thresholds:
-                accuracy_scores.append(accuracy_score(ans,
-                                                    [1 if m > thresh else 2 for m in predict]))
+                f1_scores.append(
+                    f1_score(ans, [1 if m > thresh else 2 for m in predict]))
 
-            accuracies = np.array(accuracy_scores)
-            max_accuracy += accuracies.max()
+            f1s = np.array(f1_scores)
+            max_f1 += f1s.max()
             # max_accuracy_threshold =  thresholds[accuracies.argmax()]
             # print(max_accuracy)
             # print(max_accuracy_threshold)
-
-
 
             # for i, _data in enumerate(test_data):
             #     if predict[i] < thersholds[-5]:
@@ -226,18 +224,19 @@ def main():
             roc_auc = auc(fpr, tpr)
             roc += roc_auc
         roc /= 10
-        max_accuracy /= 10
-        print(f"{_psi}\t{roc=:.5f}\t{max_accuracy=:.5f}")
+        max_f1 /= 10
+        print(f"{_psi}\t{roc=:.5f}\t{max_f1=:.5f}")
 
-            # plt.plot(fpr, tpr, 'k--', label='ROC (area = {0:.2f})'.format(roc_auc), lw=2)
+        # plt.plot(fpr, tpr, 'k--', label='ROC (area = {0:.2f})'.format(roc_auc), lw=2)
 
-            # plt.xlim([-0.05, 1.05])  # 设置x、y轴的上下限，以免和边缘重合，更好的观察图像的整体
-            # plt.ylim([-0.05, 1.05])
-            # plt.xlabel('False Positive Rate')
-            # plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
-            # plt.title('ROC Curve')
-            # plt.legend(loc="lower right")
-            # plt.show()
+        # plt.xlim([-0.05, 1.05])  # 设置x、y轴的上下限，以免和边缘重合，更好的观察图像的整体
+        # plt.ylim([-0.05, 1.05])
+        # plt.xlabel('False Positive Rate')
+        # plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
+        # plt.title('ROC Curve')
+        # plt.legend(loc="lower right")
+        # plt.show()
+
 
 if __name__ == "__main__":
     main()

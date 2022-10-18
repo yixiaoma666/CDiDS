@@ -1,3 +1,5 @@
+"""ROC_AUC例子
+"""
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
