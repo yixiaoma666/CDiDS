@@ -1,36 +1,56 @@
 from random import random
+from re import A
 from Adwin import Adwin
-import numpy
+import numpy as np
 import random
 from generate_uniform_circle import generate_uniform_circle
 import matplotlib.pyplot as plt
 
 
-lens = 1000
+
 data = []
 label = []
 
-for i in range(lens):
-    if random.random()<0.98:
-        data += generate_uniform_circle((i/100, i/100), 1, 1)
-        label.append(0)
+for _ in range(1000):
+    if random.random() < 0.98:
+        data.append(np.random.randn(1, 2)[0])
+        label.append([0, 1])
     else:
-        data += generate_uniform_circle((i/100, i/100), 10, 1)
-        label.append(1)
+        data.append(np.random.randn(1, 2)[0] * 10)
+        label.append([1, 0])
 
-numpy.savetxt("data7.csv", numpy.array([(data[i][0],data[i][1], label[i]) for i in range(lens)]), delimiter=",")
+for _ in range(1000):
+    if random.random() < 0.98:
+        data.append(np.random.randn(1, 2)[0] + np.array([5, 5]))
+        label.append([0, 1])
+    else:
+        data.append(np.random.randn(1, 2)[0] * 10  + np.array([5, 5]))
+        label.append([1, 0])
 
-for i in range(lens):
-    if label[i] == 0:
-        plt.scatter(data[i][0], data[i][1], c="b")
-for i in range(lens):
-    if label[i] == 1:
-        plt.scatter(data[i][0], data[i][1], c="r")
-plt.savefig("data7.png")
-plt.show()
-# lists = numpy.loadtxt("data5.csv", delimiter=",")
-# lists = [random.random()/10 for _ in range(1000)] + [random.random()/10+0.9 for _ in range(1000)] + [random.random()/10 for _ in range(1000)]
-# numpy.savetxt("data6.csv", lists, delimiter=",")
-# lists = numpy.array([0] * 1000 + [1] * 30 + [0] * 1000)
+for _ in range(2000):
+    r = random.random()
+    if r < 0.49:
+        data.append(np.random.randn(1, 2)[0] + np.array([5, 10]))
+        label.append([0, 1])
+    elif 0.49 <= r < 0.50:
+        data.append(np.random.randn(1, 2)[0] * 10 + np.array([5, 10]))
+        label.append([1, 0])
+    elif 0.50 <= r < 0.99:
+        data.append(np.random.randn(1, 2)[0] + np.array([10, 5]))
+        label.append([0, 1])
+    elif 0.99 <= r:
+        data.append(np.random.randn(1, 2)[0] * 10 + np.array([10, 5]))
+        label.append([1, 0])
 
-# myx = Adwin(lists).show_fig("output10.png")
+data = np.array(data)
+label = np.array(label)
+
+for i, _data in enumerate(data):
+    if label[i][0] == 0:
+        plt.scatter(_data[0], _data[1], c="b")
+    else:
+        plt.scatter(_data[0], _data[1], c="r")
+        
+output = np.concatenate((data, label), axis=1)
+np.savetxt("data10.csv", output, delimiter=",")
+plt.savefig("data10.png")
