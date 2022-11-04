@@ -1,11 +1,8 @@
-from IDK import IDK
 from IDK_rewrite import IDK_rewrite
-from BaseLineModel import BaseLineModel
 import numpy as np
 from typing import List, Tuple
 import matplotlib.pyplot as plt
-from generate_uniform_circle import generate_uniform_circle
-from sklearn.metrics import f1_score, roc_curve, auc, accuracy_score
+from sklearn.metrics import f1_score, roc_curve, auc
 
 
 class Model_detector:
@@ -35,7 +32,7 @@ class Model_detector:
     def check_anomaly(self,
                       index: int,
                       point: np.ndarray) -> bool:
-        if self.model.kappa(point) < self.anomaly_thershold:
+        if self.model.kappa(point) <= self.anomaly_thershold:
             self.add_anomarous(index)
             return True
         return False
@@ -52,8 +49,9 @@ class ADwCDiDS:
                  _t: int = 100,
                  _window_size: int = 500,
                  _alpha: float = 0.05,
-                 _beta: float = 0.4,
-                 _k: float = 0.01) -> None:
+                 _beta: float = 0.5,
+                 _k: float = 0.01,
+                 _init_window=500) -> None:
         """An anomaly detector in data streaming with concept drift based on IDK
 
         Args:
@@ -73,6 +71,7 @@ class ADwCDiDS:
         self.alpha = _alpha
         self.beta = _beta
         self.k = _k
+        self.init_window_size = _init_window
         self.data_index = 0
         self.size = self.data.shape[0]
         self.model_bucket: List[Model_detector] = []
@@ -83,8 +82,16 @@ class ADwCDiDS:
         while not self.is_over:
             temp_data_index, temp_data = self._get_element()
             self.check_all_anomaly(temp_data_index, temp_data)
+            # output.append(predict[0])
             output.append(self.get_all_score(temp_data))
             self.birth_all_model()
+            ma = 0
+            mi = 1000
+            for model in self.model_bucket:
+                ma = max(ma, len(model.anomarous_index_list))
+                mi = min(mi, len(model.anomarous_index_list))
+            # with open("new.csv", mode="a+") as f:
+            #     f.write(str(len(self.model_bucket))+","+str(ma)+","+str(mi)+"\n")
         return output
 
     def _get_element(self) -> Tuple[int, np.ndarray]:
@@ -95,7 +102,9 @@ class ADwCDiDS:
     def init_model(self):
         self.model_bucket.append(
             Model_detector(
-                IDK_rewrite(self.data[:int(self.window_size * self.alpha), :],
+                # IDK_rewrite(self.data[:int(self.window_size * self.alpha), :],
+                #             self.psi),
+                IDK_rewrite(self.data[:int(self.init_window_size), :],
                             self.psi),
                 self.window_size,
                 self.k))
@@ -147,9 +156,13 @@ class ADwCDiDS:
                     IDK_rewrite(anomalous, self.psi),
                     self.window_size,
                     self.k))
+                # print("B")
+                # print(model.anomarous_index_list)
                 model.is_birth = True
             return
         elif self.check_rate(model) == "D":
+            # print("D")
+            # print(model.anomarous_index_list)
             self.model_bucket.remove(model)
             return
 
@@ -178,54 +191,68 @@ class ADwCDiDS:
 
     def get_all_score(self,
                       data: np.ndarray):
-        score = 1
+        score = 0
         for each in self.model_bucket:
-            score = min(score, each.get_score(data))
+            score = max(score, each.get_score(data))
         return score
 
 
 def main():
-    for _psi in [2]:
+    for _psi in [2,4,8,16,32,64,128,256]:
         roc = 0
         max_f1 = 0
+        a = 0.10
+        b = 0.80
         for _ in range(10):
             test_data = np.loadtxt(
-                "data_set\shuttle.csv", delimiter=",")[:, :9]
-            ans = np.loadtxt("data_set\shuttle.csv", delimiter=",")[
-                :, 9].reshape(-1)
-            # test_data = np.array(generate_uniform_circle((0,0), 1, 1000) + generate_uniform_circle((10, 10), 1, 1000))
-            myx = ADwCDiDS(test_data, _psi, _k=0.001)
+                "my_data\data9.csv", delimiter=",")[:, :2]
+            ans = np.loadtxt("my_data\data9.csv", delimiter=",")[:, 2].reshape(-1)
+            myx = ADwCDiDS(test_data, _psi, _t=500, _window_size=100,
+                           _alpha=a, _beta=b, _k=0.001, _init_window=100)
             predict = myx.detect()
-            ans = list(1+ans)  # 异常是2，正常是1
+            # exit()
+            predict = 1-np.array(predict)
+            predict_1 = predict[0:1000]
+            ans_1 = ans[0:1000]
+            predict_2 = predict[1000:2000]
+            ans_2 = ans[1000:2000]
+            predict_3 = predict[2000:3000]
+            ans_3 = ans[2000:3000]
+            
+            for tp, ta in [(predict, ans)]:
+                fpr, tpr, thresholds = roc_curve(ta, tp)
+                f1_scores = []
+                # for thresh in thresholds:
+                #     f1_scores.append(
+                #         f1_score(ta, [1 if m > thresh else 0 for m in tp]))
 
-            fpr, tpr, thresholds = roc_curve(ans, predict, pos_label=2)
-            f1_scores = []
-            for thresh in thresholds:
-                f1_scores.append(
-                    f1_score(ans, [1 if m > thresh else 2 for m in predict]))
-
-            f1s = np.array(f1_scores)
-            max_f1 += f1s.max()
+                f1s = np.array(f1_scores)
+                
+                roc_auc = auc(fpr, tpr)
+                print(roc_auc, end=",")
+                # print(f1s.max(), end=",")
+            print("")
+            # max_f1 += f1_score(ans_1, predict_1)
             # max_accuracy_threshold =  thresholds[accuracies.argmax()]
             # print(max_accuracy)
             # print(max_accuracy_threshold)
 
-            # for i, _data in enumerate(test_data):
-            #     if predict[i] < thersholds[-5]:
-            #         plt.scatter(_data[0], _data[1], c="r")
-            #     else:
-            #         plt.scatter(_data[0], _data[1], c="b")
+            for i, _data in enumerate(test_data):
+                if predict[i] <= thresholds[-20]:
+                    plt.scatter(_data[0], _data[1], c="b")
+            for i, _data in enumerate(test_data):
+                if predict[i] > thresholds[-20]:
+                    plt.scatter(_data[0], _data[1], c="r")
 
-            # plt.show()
-
-            # for i, value in enumerate(thersholds):
+            plt.show()
+            exit()
+            # for i, value in enumerate(thresholds):
             #     print("%f %f %f" % (fpr[i], tpr[i], value))
-
-            roc_auc = auc(fpr, tpr)
+            # max_f1 += f1s.max()
             roc += roc_auc
         roc /= 10
         max_f1 /= 10
-        print(f"{_psi}\t{roc=:.5f}\t{max_f1=:.5f}")
+        print(f"{a=:.2f}\t{b=:.2f}\t{_psi=}\t{roc=:.5f}\t{max_f1=:.5f}")
 
         # plt.plot(fpr, tpr, 'k--', label='ROC (area = {0:.2f})'.format(roc_auc), lw=2)
 

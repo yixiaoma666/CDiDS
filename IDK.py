@@ -118,6 +118,8 @@ def main():
     myx = IDK(test_data, 2)
     predict = myx.get_score()
 
+    label
+    
     fpr, tpr, thersholds = roc_curve(label, predict, pos_label=2)
 
     for i, value in enumerate(thersholds):
