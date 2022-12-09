@@ -98,7 +98,7 @@ class IDK:
     def _is_in(x, radius, y):
         return np.sum((np.array(x)-np.array(y))**2) < radius ** 2
 
-    def get_average_thershold(self) -> float:
+    def get_average_threshold(self) -> float:
         output = 0
         for each in self.data:
             output += self.kappa(each)
@@ -120,9 +120,9 @@ def main():
 
     label
     
-    fpr, tpr, thersholds = roc_curve(label, predict, pos_label=2)
+    fpr, tpr, thresholds = roc_curve(label, predict, pos_label=2)
 
-    for i, value in enumerate(thersholds):
+    for i, value in enumerate(thresholds):
         print("%f %f %f" % (fpr[i], tpr[i], value))
 
     roc_auc = auc(fpr, tpr)

@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
@@ -13,7 +11,7 @@ class IDK_rewrite:
         self.center_list = []
         self.radius_list = []
         self.point_fm_list = self.IK_inne_fm()
-        self.feature_mean_map = np.mean(self.point_fm_list, axis=0)
+        self.feature_mean_map: np.ndarray = np.mean(self.point_fm_list, axis=0)
 
     def IK_inne_fm(self):
 
@@ -22,7 +20,8 @@ class IDK_rewrite:
         for time in range(self.t):
             sample_num = self.psi  #
             sample_list = [p for p in range(len(self.X))]
-            sample_list = random.sample(sample_list, sample_num)
+            sample_list = np.random.choice(sample_list, sample_num).tolist()
+            # sample_list = random.sample(sample_list, sample_num)
             sample = self.X[sample_list, :]
 
             tem1 = np.dot(np.square(self.X), np.ones(sample.T.shape))  # n*psi
@@ -63,16 +62,24 @@ class IDK_rewrite:
             if ind[time]:
                 feature_map[min_point2sample_index[time]+time*self.psi] = 1
         return np.dot(feature_map, self.feature_mean_map)/self.t
-    
-    def get_average_thershold(self):
+
+    def get_average_threshold(self):
         return np.mean(self.feature_mean_map)
+
+    def get_min_var_threshold(self):
+        map_temp = self.feature_mean_map.copy()
+        map_temp.sort()
+        var_list = np.array([map_temp[:i].var() + map_temp[i:].var()
+                            for i in range(1, len(map_temp))])
+        return map_temp[np.argmin(var_list)]
 
 
 if __name__ == "__main__":
     test_data = np.random.randn(1000, 2)
     myx = IDK_rewrite(test_data, 2)
+    print(myx.get_min_var_threshold())
     predict = myx.IDK()
-    thers = myx.get_average_thershold()
+    thres = myx.get_average_threshold()
     anomaly = myx.kappa(np.array([3, 0]))
     normal = myx.kappa(np.array([0, 0]))
     print(anomaly/normal)
@@ -83,11 +90,11 @@ if __name__ == "__main__":
     #         plt.scatter(test_data[i][0], test_data[i][1], c="r")
     # plt.show()
 
-    # fpr, tpr, thersholds = roc_curve(label, predict, pos_label=2)
+    # fpr, tpr, thresholds = roc_curve(label, predict, pos_label=2)
 
-    # for i, value in enumerate(thersholds):
+    # for i, value in enumerate(thresholds):
     #     print("%f %f %f" % (fpr[i], tpr[i], value))
-    # print(thers)
+    # print(thres)
     # roc_auc = auc(fpr, tpr)
 
     # plt.plot(fpr, tpr, 'k--',

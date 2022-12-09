@@ -1,18 +1,22 @@
-from turtle import color
-from generate_uniform_circle import *
-from SENNE import SENNE
+from psKC import psKC
 import matplotlib.pyplot as plt
+import scipy.io as scio
+import numpy as np
+from sklearn.metrics import adjusted_mutual_info_score
 
-DS = []
-DS.append(generate_uniform_circle((0, 0), 1, 100))
-# DS.append(generate_uniform_circle((2, 2), 1, 100))
-new_point = (1, 1)
+# path = r"SENNE-master\Datasets\Synthetic.mat"
+# all_data = scio.loadmat(path)
 
-for each in DS:
-    for point in each:
-        plt.scatter(point[0], point[1], color="red")
-plt.scatter(new_point[0], new_point[1], color="blue")
+# data = all_data["art4"][:, 0]
+# label = all_data["art4"][:, 1]
 
-myx = SENNE(DS, 32, 100, 0.6)
-print(f"{myx.get_Ni(new_point, 0)}")
-plt.show()
+path = r"my_data\nine_direction.mat"
+all_data = scio.loadmat(path)["nine_direction"]
+
+data = all_data[:, 0]
+label = all_data[:, 1]
+
+
+
+
+test_data = data[0]

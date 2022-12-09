@@ -11,7 +11,7 @@ class BaseLineModel:
         var = (self.data.var(0) ** 0.5).mean()
         return mean, var
 
-    def get_average_thershold(self):
+    def get_average_threshold(self):
         S = 0
         for each in self.data:
             S += self.kappa(each)
@@ -35,7 +35,7 @@ class BaseLineModel:
 if __name__ == "__main__":
     test_data = np.random.randn(100, 2)
     myx = BaseLineModel(test_data)
-    a = myx.get_average_thershold()
+    a = myx.get_average_threshold()
     # a = myx.kappa(np.array([3, 0]))
     print(a)
     k = 1 / 40

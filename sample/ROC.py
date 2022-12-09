@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 y_label = ([1, 1, 1, 2, 2, 2])  # 非二进制需要pos_label
 y_pre = ([0.3, 0.5, 0.9, 0.8, 0.4, 0.6])
-fpr, tpr, thersholds = roc_curve(y_label, y_pre, pos_label=2)
+fpr, tpr, thresholds = roc_curve(y_label, y_pre, pos_label=2)
 
-for i, value in enumerate(thersholds):
+for i, value in enumerate(thresholds):
     print("%f %f %f" % (fpr[i], tpr[i], value))
 
 roc_auc = auc(fpr, tpr)

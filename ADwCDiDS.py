@@ -3,18 +3,19 @@ import numpy as np
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score, roc_curve, auc
+import scipy.io as scio
 
 
 class Model_detector:
     def __init__(self,
                  _model: IDK_rewrite,
-                 _memory: int,
-                 _k: float) -> None:
+                # _model: iForest,
+                 _memory: int) -> None:
         self.model = _model
         self.memory = _memory
-        self.k = _k
-        self.normal_thershold = self.model.get_average_thershold()
-        self.anomaly_thershold = self.k * self.normal_thershold
+        # self.normal_threshold = self.model.get_average_threshold()
+        # self.anomaly_threshold = self.k * self.normal_threshold
+        self.anomaly_threshold = self.model.get_min_var_threshold()
         self.anomarous_index_list = []
         self.is_birth = False
         self.is_death = False
@@ -32,7 +33,7 @@ class Model_detector:
     def check_anomaly(self,
                       index: int,
                       point: np.ndarray) -> bool:
-        if self.model.kappa(point) <= self.anomaly_thershold:
+        if self.get_score(point) <= self.anomaly_threshold:
             self.add_anomarous(index)
             return True
         return False
@@ -50,7 +51,6 @@ class ADwCDiDS:
                  _window_size: int = 500,
                  _alpha: float = 0.05,
                  _beta: float = 0.5,
-                 _k: float = 0.01,
                  _init_window=500) -> None:
         """An anomaly detector in data streaming with concept drift based on IDK
 
@@ -62,7 +62,7 @@ class ADwCDiDS:
             _window_size (int, optional): the size of window.
             _alpha (float, optional): the birth rate.
             _beta (float, optional): the death rate.
-            _k (_type_, optional): thershold ratio of anomalous to normal.
+            _k (_type_, optional): threshold ratio of anomalous to normal.
         """
         self.data = _data
         self.psi = _psi
@@ -70,7 +70,6 @@ class ADwCDiDS:
         self.window_size = _window_size
         self.alpha = _alpha
         self.beta = _beta
-        self.k = _k
         self.init_window_size = _init_window
         self.data_index = 0
         self.size = self.data.shape[0]
@@ -85,13 +84,14 @@ class ADwCDiDS:
             # output.append(predict[0])
             output.append(self.get_all_score(temp_data))
             self.birth_all_model()
-            ma = 0
-            mi = 1000
-            for model in self.model_bucket:
-                ma = max(ma, len(model.anomarous_index_list))
-                mi = min(mi, len(model.anomarous_index_list))
+            # ma = 0
+            # mi = 1000
+            # for model in self.model_bucket:
+            #     ma = max(ma, len(model.anomarous_index_list))
+            #     mi = min(mi, len(model.anomarous_index_list))
             # with open("new.csv", mode="a+") as f:
             #     f.write(str(len(self.model_bucket))+","+str(ma)+","+str(mi)+"\n")
+            # print(len(self.model_bucket))
         return output
 
     def _get_element(self) -> Tuple[int, np.ndarray]:
@@ -102,12 +102,10 @@ class ADwCDiDS:
     def init_model(self):
         self.model_bucket.append(
             Model_detector(
-                # IDK_rewrite(self.data[:int(self.window_size * self.alpha), :],
-                #             self.psi),
                 IDK_rewrite(self.data[:int(self.init_window_size), :],
                             self.psi),
-                self.window_size,
-                self.k))
+                # iForest(self.data[:int(self.init_window_size), :]),
+                self.window_size))
 
     # def init_model(self):
     #     self.model_bucket.append(
@@ -154,8 +152,8 @@ class ADwCDiDS:
                 self.model_bucket.append(Model_detector(
                     # BaseLineModel(anomalous),
                     IDK_rewrite(anomalous, self.psi),
-                    self.window_size,
-                    self.k))
+                    # iForest(anomalous),
+                    self.window_size))
                 # print("B")
                 # print(model.anomarous_index_list)
                 model.is_birth = True
@@ -202,13 +200,13 @@ def main():
         roc = 0
         max_f1 = 0
         a = 0.10
-        b = 0.80
+        b = 0.60
         for _ in range(10):
             test_data = np.loadtxt(
-                "my_data\data9.csv", delimiter=",")[:, :2]
-            ans = np.loadtxt("my_data\data9.csv", delimiter=",")[:, 2].reshape(-1)
-            myx = ADwCDiDS(test_data, _psi, _t=500, _window_size=100,
-                           _alpha=a, _beta=b, _k=0.001, _init_window=100)
+                "data_set\shuttle.csv", delimiter=",")[:, :9]
+            ans = np.loadtxt("data_set\shuttle.csv", delimiter=",")[:, 9].reshape(-1)
+            myx = ADwCDiDS(test_data, _psi, _t=500, _window_size=256,
+                           _alpha=a, _beta=b, _init_window=256)
             predict = myx.detect()
             # exit()
             predict = 1-np.array(predict)
@@ -222,33 +220,34 @@ def main():
             for tp, ta in [(predict, ans)]:
                 fpr, tpr, thresholds = roc_curve(ta, tp)
                 f1_scores = []
-                # for thresh in thresholds:
-                #     f1_scores.append(
-                #         f1_score(ta, [1 if m > thresh else 0 for m in tp]))
+                for thresh in thresholds:
+                    f1_scores.append(
+                        f1_score(ta, [1 if m > thresh else 0 for m in tp]))
 
                 f1s = np.array(f1_scores)
                 
                 roc_auc = auc(fpr, tpr)
                 print(roc_auc, end=",")
-                # print(f1s.max(), end=",")
+                print(f1s.max(), end=",")
             print("")
+            # f1_scores = np.array(f1_scores)
             # max_f1 += f1_score(ans_1, predict_1)
             # max_accuracy_threshold =  thresholds[accuracies.argmax()]
             # print(max_accuracy)
             # print(max_accuracy_threshold)
 
-            for i, _data in enumerate(test_data):
-                if predict[i] <= thresholds[-20]:
-                    plt.scatter(_data[0], _data[1], c="b")
-            for i, _data in enumerate(test_data):
-                if predict[i] > thresholds[-20]:
-                    plt.scatter(_data[0], _data[1], c="r")
+            # for i, _data in enumerate(test_data):
+            #     if predict[i] <= thresholds[f1_scores.argmax()]:
+            #         plt.scatter(_data[0], _data[1], c="b")
+            # for i, _data in enumerate(test_data):
+            #     if predict[i] > thresholds[f1_scores.argmax()]:
+            #         plt.scatter(_data[0], _data[1], c="r")
 
-            plt.show()
-            exit()
+            # plt.show()
+            # exit()
             # for i, value in enumerate(thresholds):
             #     print("%f %f %f" % (fpr[i], tpr[i], value))
-            # max_f1 += f1s.max()
+            max_f1 += f1s.max()
             roc += roc_auc
         roc /= 10
         max_f1 /= 10

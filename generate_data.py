@@ -9,72 +9,74 @@ def gen_ano(direction, center=np.array([0, 0]), distance=10, var=1):
     _direction = random.sample(direction, 1)[0]
     if _direction == "c":
         return (np.random.randn(1, 2)[0]) * var + center
-    if _direction == "n":
+    elif _direction == "n":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([0, distance])
-    if _direction == "e":
+    elif _direction == "e":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([distance, 0])
-    if _direction == "s":
+    elif _direction == "s":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([0, -distance])
-    if _direction == "w":
+    elif _direction == "w":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([-distance, 0])
-    if _direction == "ne":
+    elif _direction == "ne":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([distance, distance])
-    if _direction == "se":
+    elif _direction == "se":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([distance, -distance])
-    if _direction == "sw":
+    elif _direction == "sw":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([-distance, -distance])
-    if _direction == "nw":
+    elif _direction == "nw":
         return (np.random.randn(1, 2)[0]) * var + center + np.array([-distance, distance])
 
 
 data = []
 label = []
 
-for _ in range(1000):  # 1
-    r = random.random()
-    if r < 0.02:
-        data.append(gen_ano(["w"]))
-        label.append((1, 0))
-        continue
-    data.append(gen_ano(["e"]))
-    label.append((0, 1))
-
-for _ in range(1000): # 2
-    r = random.random()
-    if r < 0.5:
-        data.append(gen_ano(["w"]))
-        label.append((0, 1))
-        continue
-    data.append(gen_ano(["e"]))
-    label.append((0, 1))
-
-for _ in range(1000):  # 3
-    r = random.random()
-    if r < 0.02:
-        data.append(gen_ano(["e"]))
-        label.append((1, 0))
-        continue
-    data.append(gen_ano(["w"]))
-    label.append((0, 1))
-
-
-for i in range(3000):
-    if random.random() < 0.01:
-        data[i] = gen_ano(["n"])
-        label[i] = (1, 0)
-    
-
-
-data = np.array(data)
-label = np.array(label)
-
-for i, _data in enumerate(data):
-    if label[i][0] == 0:
-        plt.scatter(_data[0], _data[1], c="b")
+for _ in range(1000):
+    if random.random()<0.02:
+        data.append((gen_ano(["ne", "se", "sw", "nw"])))
+        label.append(1)
     else:
-        plt.scatter(_data[0], _data[1], c="r")
+        if random.random()<0.5:
+            data.append((gen_ano(["n"])))
+            label.append(2)
+        else:
+            data.append((gen_ano(["s"])))
+            label.append(3)
 
-output = np.concatenate((data, label), axis=1)
-np.savetxt("data13.csv", output, delimiter=",")
-plt.savefig("data13.png")
-# plt.show()
+for _ in range(1000):
+    if random.random()<0.02:
+        data.append((gen_ano(["ne", "se", "sw", "nw"])))
+        label.append(1)
+    else:
+        if random.random()<1/3:
+            data.append((gen_ano(["n"])))
+            label.append(2)
+        elif random.random()<1/2:
+            data.append((gen_ano(["s"])))
+            label.append(3)
+        else:
+            data.append((gen_ano(["w"])))
+            label.append(4)
+
+for _ in range(1000):
+    if random.random()<0.02:
+        data.append((gen_ano(["ne", "se", "sw", "nw"])))
+        label.append(1)
+    else:
+        if random.random()<1/4:
+            data.append((gen_ano(["n"])))
+            label.append(2)
+        elif random.random()<1/3:
+            data.append((gen_ano(["s"])))
+            label.append(3)
+        elif random.random()<1/2:
+            data.append((gen_ano(["w"])))
+            label.append(4)
+        else:
+            data.append((gen_ano(["e"])))
+            label.append(5)
+
+
+data_np = np.array(data)
+label_np = np.array(label)
+output = np.concatenate((data_np, label_np.reshape(-1, 1)), axis=1)
+np.savetxt("stream9direction.csv", output, delimiter=",")
