@@ -264,24 +264,24 @@ def IK_inne_fm(X,psi,t=100):
         onepoint_matrix[ind,min_dist_point2sample[ind]]=1
     return onepoint_matrix
 
-if __name__ == '__main__':
-    # data = sio.loadmat(r'data_set\spiral.mat')
-    # node_features = data['data']
-    # true_labels = data['class'].reshape(-1).tolist()
-    data = np.loadtxt(r"my_data\stream9direction.csv", delimiter=",")
-    node_features = data[:, :2]
-    true_labels = data[:, 2].reshape(-1).tolist()
+# if __name__ == '__main__':
+#     # data = sio.loadmat(r'data_set\spiral.mat')
+#     # node_features = data['data']
+#     # true_labels = data['class'].reshape(-1).tolist()
+#     data = np.loadtxt(r"my_data\stream9direction.csv", delimiter=",")
+#     node_features = data[:, :2]
+#     true_labels = data[:, 2].reshape(-1).tolist()
 
-    num_of_class = np.unique(true_labels).shape[0]
-    psi_li = [2,4,6,8,16,24,2,48,64,80,100,200,250,512]
-    t=100
-    for psi in psi_li:
-        result = auto_search_tau(node_features,n_cluster=num_of_class,kernel='ik',psi=psi,t=t)
-        nmi_li, acc_li,f1_li=[],[],[]
-        for predict_labels in result:
-            translate, new_predict_labels = cm.translate(true_labels, predict_labels)
-            acc, nmi, f1, precision_macro, recall_macro, f1_micro, precision_micro, recall_micro, adjscore = cm.evaluationClusterModelFromLabel(true_labels, new_predict_labels)
-            nmi_li.append(nmi)
-            f1_li.append(f1)
-            acc_li.append(acc)
-        print("@psi={} Acc:{}  NMI:{}  f1-macro: {}".format(psi,max(acc_li),max(nmi_li),max(f1_li)))
+#     num_of_class = np.unique(true_labels).shape[0]
+#     psi_li = [2,4,6,8,16,24,2,48,64,80,100,200,250,512]
+#     t=100
+#     for psi in psi_li:
+#         result = auto_search_tau(node_features,n_cluster=num_of_class,kernel='ik',psi=psi,t=t)
+#         nmi_li, acc_li,f1_li=[],[],[]
+#         for predict_labels in result:
+#             translate, new_predict_labels = cm.translate(true_labels, predict_labels)
+#             acc, nmi, f1, precision_macro, recall_macro, f1_micro, precision_micro, recall_micro, adjscore = cm.evaluationClusterModelFromLabel(true_labels, new_predict_labels)
+#             nmi_li.append(nmi)
+#             f1_li.append(f1)
+#             acc_li.append(acc)
+#         print("@psi={} Acc:{}  NMI:{}  f1-macro: {}".format(psi,max(acc_li),max(nmi_li),max(f1_li)))

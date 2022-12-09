@@ -30,7 +30,7 @@ def gen_ano(direction, center=np.array([0, 0]), distance=10, var=1):
 data = []
 label = []
 
-for _ in range(1000):
+for _ in range(5000):
     if random.random()<0.02:
         data.append((gen_ano(["ne", "se", "sw", "nw"])))
         label.append(1)
@@ -42,7 +42,7 @@ for _ in range(1000):
             data.append((gen_ano(["s"])))
             label.append(3)
 
-for _ in range(1000):
+for _ in range(5000):
     if random.random()<0.02:
         data.append((gen_ano(["ne", "se", "sw", "nw"])))
         label.append(1)
@@ -57,7 +57,7 @@ for _ in range(1000):
             data.append((gen_ano(["w"])))
             label.append(4)
 
-for _ in range(1000):
+for _ in range(5000):
     if random.random()<0.02:
         data.append((gen_ano(["ne", "se", "sw", "nw"])))
         label.append(1)

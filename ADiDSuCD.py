@@ -8,7 +8,7 @@ import pandas as pd
 
 
 class ADiDSuCD:
-    def __init__(self, _data: np.ndarray, _label: np.ndarray, _psi: int, _t: int = 100, _init_window=500, _buffer_size=300) -> None:
+    def __init__(self, _data: np.ndarray, _label: np.ndarray, _psi: int, _t: int = 100, _init_window=500, _buffer_size=500) -> None:
         self.data = _data
         self.label = _label
         self.psi = _psi
@@ -21,7 +21,7 @@ class ADiDSuCD:
         self.detectors = []
         self.predict_label = np.zeros(self.label.shape)-1
 
-        self.thre_pool = [[0.0004], [0.004], [0.008], [0.008]]
+        self.thre_pool = [[0.001], [0.00025], [0.04], [0.109]]
 
         self.init_detector()
         self.detect()
@@ -90,7 +90,7 @@ class ADiDSuCD:
                 self.predict_label[temp_index] = max_score_num + 1
             if self.is_buffer_full:
                 self.emerge_class()
-            pass
+                pass
 
     def emerge_class(self):
         temp_index = np.array(self.buffer)
@@ -105,7 +105,7 @@ class ADiDSuCD:
         self.buffer = temp_index[temp_idk_score < best_thre].tolist()
         self.predict_label[temp_index[temp_idk_score < best_thre]] = 0
         self.predict_label[temp_index[temp_idk_score >= best_thre]] = len(
-            self.detectors)
+            self.detectors)+1
         self.detectors.append((temp_idk, best_thre))
         
 
@@ -116,6 +116,7 @@ class ADiDSuCD:
         return len(self.buffer) == self.buffer_size
 
     def plot_idk(self, _idk, _thres, _data):
+        # return 
         x = np.arange(-15, 15, 0.1)
         y = np.arange(-15, 15, 0.1)
         X, Y = np.meshgrid(x, y)
@@ -135,15 +136,15 @@ class ADiDSuCD:
             # plt.show()
             # pass
             # plt.scatter(grid[:, 0], grid[:, 1])
-            plt.scatter(grid[grid_score < _thre][:, 0],
-                        grid[grid_score < _thre][:, 1], c="r")
             plt.scatter(grid[grid_score >= _thre][:, 0],
-                        grid[grid_score >= _thre][:, 1], c="b")
-            # plt.scatter(self.data[:, 0], self.data[:, 1], c="y")
-            plt.scatter(_data[:, 0], _data[:, 1], c="y")
+                        grid[grid_score >= _thre][:, 1], color=(0, 0, 1, 0.3))
+            plt.scatter(grid[grid_score < _thre][:, 0],
+                        grid[grid_score < _thre][:, 1], color=(1, 0, 0, 0.3))
+            # plt.scatter(self.data[:, 0], self.data[:, 1], color=(1, 1, 0, 0.1))
+            plt.scatter(_data[:, 0], _data[:, 1], color=(1, 1, 0, 0.1))
             plt.suptitle(f"{_thre}")
-            # plt.savefig(f"pic_out/{time.time()}.png")
-            plt.show()
+            plt.savefig(f"pic_out/{time.time()}.png")
+            # plt.show()
 
         pass
 
@@ -158,13 +159,17 @@ if __name__ == "__main__":
 
     myx = ADiDSuCD(data, label, 4, _t=1000)
     predict_label = myx.predict_label
-    plt.scatter(data[predict_label==0][:, 0], data[predict_label==0][:, 1], c="r")
+    plt.clf()
     plt.scatter(data[predict_label==1][:, 0], data[predict_label==1][:, 1], c="b")
     plt.scatter(data[predict_label==2][:, 0], data[predict_label==2][:, 1], c="g")
     plt.scatter(data[predict_label==3][:, 0], data[predict_label==3][:, 1], c="k")
-    # plt.scatter(data[predict_label==4][:, 0], data[predict_label==4][:, 1], c="y")
+    plt.scatter(data[predict_label==4][:, 0], data[predict_label==4][:, 1], c="y")
+    
+    plt.scatter(data[predict_label==0][:, 0], data[predict_label==0][:, 1], c="r")
+    
     # plt.scatter(data[predict_label==5][:, 0], data[predict_label==5][:, 1], c="c")
-    plt.show()
+    # plt.show()
+    plt.savefig(f"pic_out/{time.time()}.png")
     print(ami(label.tolist(), predict_label.tolist()))
     # S += ami(label.tolist(), predict_label.tolist())
     # print(S/10)
