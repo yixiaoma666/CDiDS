@@ -1,22 +1,25 @@
 import numpy as np
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, accuracy_score, f1_score
 import matplotlib.pyplot as plt
+import time
+import scipy.io as scio
 
 
 class IDK_rewrite:
-    def __init__(self, _X, _psi, _t=100) -> None:
+    def __init__(self, _X, _psi, _t=100, _weight=None) -> None:
         self.X = _X
         self.psi = _psi
         self.t = _t
+        self.weight = _weight
         self.center_list = []
         self.radius_list = []
         self.point_fm_list = self.IK_inne_fm()
-        self.feature_mean_map: np.ndarray = np.mean(self.point_fm_list, axis=0)
+        self.feature_mean_map: np.ndarray = self.get_weight_feature_map()
 
     def IK_inne_fm(self):
 
         onepoint_matrix = np.zeros(
-            (self.X.shape[0], (int)(self.t*self.psi)), dtype=int)
+            (self.X.shape[0], (int)(self.t*self.psi)), dtype=float)
         for time in range(self.t):
             sample_num = self.psi  #
             sample_list = [p for p in range(len(self.X))]
@@ -43,7 +46,13 @@ class IDK_rewrite:
             onepoint_matrix[ind, min_dist_point2sample[ind]] = 1
         self.center_list = np.array(self.center_list)
         self.radius_list = np.array(self.radius_list)
-        return onepoint_matrix
+        if self.weight is None:
+            return onepoint_matrix
+        else:
+            self.weight = self.norm(self.weight)
+            for i in range(len(self.weight)):
+                onepoint_matrix[i] *= self.weight[i]
+            return onepoint_matrix
 
     def IDK(self):
         return np.dot(self.point_fm_list, self.feature_mean_map)/self.t
@@ -63,26 +72,59 @@ class IDK_rewrite:
                 feature_map[min_point2sample_index[time]+time*self.psi] = 1
         return np.dot(feature_map, self.feature_mean_map)/self.t
 
-    def get_average_threshold(self):
-        return np.mean(self.feature_mean_map)
+    @staticmethod
+    def norm(x):
+        return x / np.max(x)
 
-    def get_min_var_threshold(self):
-        map_temp = self.feature_mean_map.copy()
-        map_temp.sort()
-        var_list = np.array([map_temp[:i].var() + map_temp[i:].var()
-                            for i in range(1, len(map_temp))])
-        return map_temp[np.argmin(var_list)]
+    def get_weight_feature_map(self):
+        if self.weight is None:
+            return np.mean(self.point_fm_list, axis=0)
+        else:
+            self.weight = self.norm(self.weight)
+            temp = np.zeros(self.point_fm_list.shape)
+            for i in range(len(self.weight)):
+                temp[i] = self.point_fm_list[i] * self.weight[i]
+            return np.mean(temp, axis=0)
 
 
 if __name__ == "__main__":
-    test_data = np.random.randn(1000, 2)
-    myx = IDK_rewrite(test_data, 2)
-    print(myx.get_min_var_threshold())
-    predict = myx.IDK()
-    thres = myx.get_average_threshold()
-    anomaly = myx.kappa(np.array([3, 0]))
-    normal = myx.kappa(np.array([0, 0]))
-    print(anomaly/normal)
+    # test_data = np.random.randn(1000, 2)
+    # anomaly_data = np.random.randn(20, 2)+np.array((10, 0))
+    # all_data = np.concatenate((test_data, anomaly_data), axis=0)
+    all_data = np.loadtxt("data_set\cover.csv", delimiter=",")
+    data = all_data[:, :-1]
+    label = all_data[:, -1].tolist()
+    myx = IDK_rewrite(all_data, 16, _t=100)
+    idk = myx.IDK()
+    best_acc = 0
+    for thre in np.sort(np.unique(idk)):
+        temp = np.zeros(idk.shape)
+        temp[idk <= thre] = 1
+        temp = temp.tolist()
+        best_acc = max(f1_score(label, temp), best_acc)
+        print(best_acc)
+
+    # plt.plot(np.sort(idk))
+    # plt.scatter(all_data[idk!=0][:, 0], all_data[idk!=0][:, 1], c="b")
+    # plt.scatter(all_data[idk==0][:, 0], all_data[idk==0][:, 1], c="r")
+    # plt.show()
+    # plt.clf()
+    for epoch in range(100):
+        sort_idk = np.sort(idk)
+        thres = sort_idk[int(len(sort_idk)/1020)+1]
+        new_idk = np.zeros(idk.shape)
+        new_idk[idk > thres] = 1
+        new_idk = idk
+        myx = IDK_rewrite(all_data, 4, _t=20, _weight=new_idk)
+        idk = myx.IDK()
+        plt.scatter(all_data[idk != 0][:, 0], all_data[idk != 0][:, 1], c="b")
+        plt.scatter(all_data[idk == 0][:, 0], all_data[idk == 0][:, 1], c="r")
+        plt.savefig(f"pic_out/{time.time()}.png")
+        plt.clf()
+
+        # plt.plot(np.sort(idk))
+
+    # plt.show()
     # for i in range(len(test_data)):
     #     if myx.kappa(test_data[i]) > 0.000510:
     #         plt.scatter(test_data[i][0], test_data[i][1], c="b")

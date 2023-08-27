@@ -1,22 +1,18 @@
-from psKC import psKC
-import matplotlib.pyplot as plt
-import scipy.io as scio
 import numpy as np
-from sklearn.metrics import adjusted_mutual_info_score
+import matplotlib.pyplot as plt
+from my_IDK import my_IDK
+from sklearn.metrics import roc_auc_score
 
-# path = r"SENNE-master\Datasets\Synthetic.mat"
-# all_data = scio.loadmat(path)
+dld = np.loadtxt("norm1d_drift.csv", delimiter=",")
 
-# data = all_data["art4"][:, 0]
-# label = all_data["art4"][:, 1]
+data = dld[:10000, :-2].reshape(-1, 1)
+label = dld[:10000, -2]
 
-path = r"my_data\nine_direction.mat"
-all_data = scio.loadmat(path)["nine_direction"]
+detector = my_IDK(data, 2, 20)
+scores = 1 - detector.IDK_score()
 
-data = all_data[:, 0]
-label = all_data[:, 1]
+print(roc_auc_score(label, scores))
 
+plt.scatter(np.arange(10000), scores, c=label)
+plt.show()
 
-
-
-test_data = data[0]
